@@ -1,0 +1,9 @@
+static/
+dynamic/
+
+*.so
+*.a
+*.o
+
+consumer
+
