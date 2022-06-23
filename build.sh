@@ -2,6 +2,8 @@
 
 set -e
 
+CC=/usr/local/bin/gcc-10
+
 rm -rf static
 rm -rf dynamic
 
@@ -10,29 +12,29 @@ mkdir -p dynamic
 
 cd bar
 # Build the object file
-gcc -c bar.c
+$CC -c bar.c
 # Build the static library
 ar -r ../static/libbar.a bar.o
 # Build the shared library
-gcc -shared -fPIC -o ../dynamic/libbar.so bar.o
+$CC -shared -fPIC -o ../dynamic/libbar.so bar.o
 cd ..
 
 cd foo
 # Build the object file
-gcc -c foo.c
+$CC -c foo.c
 # Build the static library
 ar -r ../static/libfoo.a foo.o
 # Build the shared library
-gcc -shared -fPIC -o ../dynamic/libfoo.so foo.c
+$CC -shared -fPIC -o ../dynamic/libfoo.so foo.c
 cd ..
 
 # Build libtimesr as a shared library, but statically
 # link it against libbar and libfoo so that they are
 # not required in order to run consumer.
-gcc -shared -Lstatic/ -Ibar/ -Ifoo/ -lbar -lfoo -fPIC -o libtimesr.so timesr.c
+$CC -shared -Lstatic/ -Ibar/ -Ifoo/ -lbar -lfoo -fPIC -o libtimesr.so timesr.c
 
 # Build consumer against libtimesr
-gcc -L. -I. -ltimesr -o consumer consumer.c
+$CC -L. -I. -ltimesr -o consumer consumer.c
 
 # Now we can run consumer, it still requires libtimesr.so,
 # which it will find since it is in the same directory,
@@ -45,13 +47,13 @@ otool -L libtimesr.so
 # Build libtimesr as a shared library, but link it
 # dynamically against libbar and libfoo so that they
 # are required in order to run consumer.
-gcc -shared -Ldynamic/ -Ibar/ -Ifoo/ -lbar -lfoo -fPIC -o libtimesr.so timesr.c
+$CC -shared -Ldynamic/ -Ibar/ -Ifoo/ -lbar -lfoo -fPIC -o libtimesr.so timesr.c
 
 # Build consumer as a dynamic binary
 # Consumer relies on libtimesr, which in turn relies
 # on libbar and libfoo, and all of them must be found
 # at runtime.
-gcc -L. -I. -ltimesr -o consumer consumer.c
+$CC -L. -I. -ltimesr -o consumer consumer.c
 
 # Now, when we run consumer, we need libbar and libfoo
 # because they aren't statically linked into libtimesr
